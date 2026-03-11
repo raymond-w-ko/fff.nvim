@@ -93,6 +93,33 @@ function M.get_border_highlight_selected(git_status)
   return border_highlights_selected_cache and border_highlights_selected_cache[git_status] or ''
 end
 
+--- Build a temporary highlight that keeps git sign foreground and cursor background.
+--- Uses cterm attrs when termguicolors is off to avoid invalid RGB color errors.
+--- @param border_hl string
+--- @param cursor_hl string
+--- @return table|nil
+function M.get_selected_border_highlight_opts(border_hl, cursor_hl)
+  if not border_hl or border_hl == '' or not cursor_hl or cursor_hl == '' then return nil end
+
+  local ok_border, border = pcall(vim.api.nvim_get_hl, 0, { name = border_hl, link = false, create = false })
+  local ok_cursor, cursor = pcall(vim.api.nvim_get_hl, 0, { name = cursor_hl, link = false, create = false })
+  if not ok_border or not ok_cursor then return nil end
+
+  if not vim.tbl_isempty(border) and not vim.tbl_isempty(cursor) then
+    if vim.o.termguicolors and border.fg ~= nil and cursor.bg ~= nil then
+      return { fg = border.fg, bg = cursor.bg }
+    end
+
+    if border.ctermfg ~= nil and cursor.ctermbg ~= nil then
+      return { ctermfg = border.ctermfg, ctermbg = cursor.ctermbg }
+    end
+
+    if border.fg ~= nil and cursor.bg ~= nil then return { fg = border.fg, bg = cursor.bg } end
+  end
+
+  return nil
+end
+
 function M.get_border_char(git_status) return M.border_chars[git_status] or '' end
 
 function M.should_show_border(git_status)
