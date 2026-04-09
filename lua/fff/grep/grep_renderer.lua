@@ -8,6 +8,11 @@ local M = {}
 local file_renderer = require('fff.file_renderer')
 local tresitter_highlight = require('fff.treesitter_hl')
 
+local function sanitize_line_content(raw_content)
+  if type(raw_content) ~= 'string' then raw_content = raw_content and tostring(raw_content) or '' end
+  return raw_content:gsub('%z', ' ')
+end
+
 --- Build the file group header line using the same layout as file_renderer.
 --- Delegates to file_renderer.render_line (with combo disabled).
 ---@param item FileItem Grep match
@@ -47,10 +52,9 @@ end
 local function render_match_line(item, ctx)
   local location = string.format(':%d:%d', item.line_number or 0, (item.col or 0) + 1)
   local separator = '  '
-  -- vim.json.decode may return Blobs for strings with NUL bytes; coerce to string.
-  local raw_content = item.line_content
-  if type(raw_content) ~= 'string' then raw_content = raw_content and tostring(raw_content) or '' end
-  local content = raw_content
+  -- NUL bytes make Vim treat the value as a Blob in string functions.
+  -- Replace them 1:1 so display width and byte-based match offsets stay stable.
+  local content = sanitize_line_content(item.line_content)
 
   -- Indent + location + separator + content
   local indent = ' '
