@@ -65,6 +65,7 @@ local M = {}
 --- @field max_threads number
 --- @field lazy_sync boolean
 --- @field prompt_vim_mode boolean
+--- @field follow_symlinks boolean
 --- @field layout FffLayoutConfig
 --- @field preview FffPreviewConfig
 --- @field keymaps FffKeymapsConfig
@@ -201,6 +202,7 @@ local function init()
     lazy_sync = true, -- set to false if you want file indexing to start on open
     prompt_vim_mode = false, -- set to true to enable vim-mode in the prompt: <Esc> leaves insert for normal mode bindings (also allows <leader>p or <leader>l to jump around) the second <Esc> closes the picker
     wrap_around = false, -- set to true to wrap cursor to the opposite end when reaching the first/last item
+    follow_symlinks = false, -- set to true to follow symbolic links during file indexing
     layout = {
       height = 0.8,
       width = 0.8,
@@ -213,11 +215,12 @@ local function init()
       },
       show_scrollbar = true, -- Show scrollbar for pagination
       -- How to shorten long directory paths in the file list:
-      -- 'middle_number' (default): uses dots for 1-3 hidden (a/./b, a/../b, a/.../b)
-      --                            and numbers for 4+ (a/.4./b, a/.5./b)
-      -- 'middle': always uses dots (a/./b, a/../b, a/.../b)
-      -- 'end': truncates from the end (home/user/projects)
-      path_shorten_strategy = 'middle_number',
+      -- 'middle' (default): always uses dots (a/./b, a/../b, a/.../b)
+      -- 'middle_number' uses dots for 1-3 hidden (a/./b, a/../b, a/.../b)
+      --                 and numbers for 4+ (a/.4./b, a/.5./b)
+      -- 'end': truncates from the end, keeps the start (home/user/projects)
+      -- 'start': truncates from the start, keeps the end (.../parts/ai_extracted)
+      path_shorten_strategy = 'middle',
     },
     preview = {
       enabled = true,

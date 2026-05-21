@@ -19,10 +19,7 @@ end
 ---@param ctx table Render context
 ---@return string The header line string
 local function build_group_header(item, ctx)
-  ctx.has_combo = false
-  ---@diagnostic disable-next-line: param-type-mismatch
-  local lines = file_renderer.render_line(item, ctx, 0)
-  ctx.has_combo = false -- never has a combo in grep
+  local lines = file_renderer.render_line(item, ctx)
   return lines[1]
 end
 
@@ -214,10 +211,12 @@ function M.render_line(item, ctx)
   local match_line = render_match_line(item, ctx)
 
   if is_new_group then
+    ---@diagnostic disable-next-line: inject-field
     item._has_group_header = true
     local header_line = build_group_header(item, ctx)
     return { header_line, match_line }
   else
+    ---@diagnostic disable-next-line: inject-field
     item._has_group_header = false
     return { match_line }
   end
@@ -241,6 +240,7 @@ function M.apply_highlights(item, ctx, item_idx, buf, ns_id, line_idx, line_cont
 
   -- If this item has a group header, highlight it (the line above)
   -- using file_renderer for identical appearance to the file picker list.
+  ---@diagnostic disable-next-line: undefined-field
   if item._has_group_header then apply_group_header_highlights(item, ctx, buf, ns_id, row - 1) end
 end
 
